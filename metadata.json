@@ -1,0 +1,8 @@
+{
+  "name": "Focus Follows Workspace",
+  "description": "Focus the primary monitor after switching workspaces via keyboard",
+  "uuid": "focus-follows-workspace@christopher.luebbemeier.gmail.com",
+  "shell-version": [
+    "41"
+  ]
+}
