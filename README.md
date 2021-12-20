@@ -17,6 +17,10 @@ Go to "Settings" > "Keyboard" > "View and Customize Shortcuts" > "Navigation" an
 
 ![Settings for keybindings"](/doc/img/settings-keybindings.png)
 
+## License
+
+[GPLv3](https://www.gnu.org/licenses/gpl-3.0.html) or later.
+
 
 [1]: https://wiki.gnome.org/Projects/GnomeShell/Extensions
 [2]: https://extensions.gnome.org/extension/1231/switch-workspace/
