@@ -4,7 +4,8 @@
   "uuid": "focus-follows-workspace@christopher.luebbemeier.gmail.com",
   "version": 1,
   "shell-version": [
-    "41"
+    "41",
+    "42"
   ],
   "url": "https://github.com/christopher-l/focus-follows-workspace"
 }
