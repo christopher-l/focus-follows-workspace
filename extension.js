@@ -6,7 +6,9 @@ const Me = ExtensionUtils.getCurrentExtension();
 const AltTab = imports.ui.altTab;
 const Main = imports.ui.main;
 const WindowManager = imports.ui.windowManager;
+const WorkspaceAnimation = imports.ui.workspaceAnimation;
 const Mainloop = imports.mainloop;
+const Meta = imports.gi.Meta;
 
 class Extension {
     constructor() {
@@ -16,6 +18,7 @@ class Extension {
     enable() {
         this._overrideActionMoveWorkspace();
         this._overrideHandleWorkspaceScroll();
+        this._overrideActivate();
     }
 
     disable() {
@@ -23,6 +26,7 @@ class Extension {
             this._actionMoveWorkspaceOriginal;
         WindowManager.WindowManager.prototype.handleWorkspaceScroll =
             this._handleWorkspaceScrollOriginal;
+        Meta.Workspace.prototype.activate = this._activateOriginal;
     }
 
     _overrideActionMoveWorkspace() {
@@ -53,6 +57,36 @@ class Extension {
         };
     }
 
+    _overrideActivate() {
+        this._activateOriginal = Meta.Workspace.prototype.activate;
+        const self = this;
+        Meta.Workspace.prototype.activate = function () {
+            // We cannot reliably override `_switchWorkspaceEnd`, so we override `activate` and
+            // check if it was invoked by `_switchWorkspaceEnd`. Since the three-finger gesture only
+            // works when on the primary monitor (when workspaces don't span monitors), we can
+            // assume that the primary monitor has the pointer.
+            if (self._causedBySwipeGesture()) {
+                self._focusPrimaryMonitorWhenHasPointer(this);
+            }
+            self._activateOriginal.apply(this, arguments);
+        };
+    }
+
+    /**
+     * Return true if the current call to `Workspace.activate` was invoked by a three-finger swipe
+     * gesture to switch workspaces.
+     */
+    _causedBySwipeGesture() {
+        const stack = new Error().stack;
+        return stack
+            .split('\n')
+            .some((line) =>
+                line.startsWith(
+                    '_switchWorkspaceEnd/params.onComplete@resource:///org/gnome/shell/ui/workspaceAnimation.js',
+                ),
+            );
+    }
+
     /** Focus the most recently focused window of the current workspace on the primary monitor. */
     _focusPrimaryMonitor() {
         // `AltTab.getWindows` might return windows of the current monitor only. We move the pointer
@@ -61,17 +95,26 @@ class Extension {
         // Wait a tick for the current monitor to be updated reliably.
         Mainloop.timeout_add(0, () => {
             const activeWs = global.workspaceManager.get_active_workspace();
-            const windows = AltTab.getWindows(activeWs);
-            const mostRecentWindowOnPrimaryMonitor = windows.find(
-                (window) => window.get_monitor() === Main.layoutManager.primaryIndex,
-            );
-            if (mostRecentWindowOnPrimaryMonitor) {
-                activeWs.activate_with_focus(
-                    mostRecentWindowOnPrimaryMonitor,
-                    global.get_current_time(),
-                );
-            }
+            this._focusPrimaryMonitorWhenHasPointer(activeWs);
         });
+    }
+
+    /**
+     * Focus the most recently focused window of the current workspace on the primary monitor.
+     *
+     * Might not work when the cursor is not in the primary monitor.
+     */
+    _focusPrimaryMonitorWhenHasPointer(workspace) {
+        const windows = AltTab.getWindows(workspace);
+        const mostRecentWindowOnPrimaryMonitor = windows.find(
+            (window) => window.get_monitor() === Main.layoutManager.primaryIndex,
+        );
+        if (mostRecentWindowOnPrimaryMonitor) {
+            workspace.activate_with_focus(
+                mostRecentWindowOnPrimaryMonitor,
+                global.get_current_time(),
+            );
+        }
     }
 
     /** Move the pointer to the primary monitor if it is not already there. */
