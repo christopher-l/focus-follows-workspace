@@ -2,8 +2,25 @@
 
 set -e
 
-ZIP_FILE="focus-follows-workspace.zip"
-FILES=("extension.js" "metadata.json")
+PACK_FILE="focus-follows-workspace@christopher.luebbemeier.gmail.com.shell-extension.zip"
 
-rm "$ZIP_FILE" || true
-zip "$ZIP_FILE" "${FILES[@]}"
+function pack() (
+    gnome-extensions pack --force
+    echo "Packed $PACK_FILE"
+)
+
+function install() (
+    gnome-extensions install --force "$PACK_FILE"
+    echo "Installed $PACK_FILE"
+)
+
+function main() (
+    pack
+    while getopts i flag; do
+        case $flag in
+        i) install ;;
+        esac
+    done
+)
+
+main "$@"
