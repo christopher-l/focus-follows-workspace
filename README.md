@@ -19,6 +19,14 @@ Go to "Settings" > "Keyboard" > "View and Customize Shortcuts" > "Navigation" an
 
 ![Settings for keybindings"](/doc/img/settings-keybindings.png)
 
+## Install
+
+The following command will build the extension and install it locally.
+
+```sh
+./bundle.sh -i
+```
+
 ## License
 
 [GPLv3](https://www.gnu.org/licenses/gpl-3.0.html) or later.
