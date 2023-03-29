@@ -3,6 +3,8 @@
 A [Gnome Shell Extension][1] that focuses (and moves the cursor to) the primary monitor after the
 workspace was switched with a keyboard shortcut.
 
+https://extensions.gnome.org/extension/4688/focus-follows-workspace/
+
 This extension is meant to be used with a multi-monitor setup with the setting "Workspaces on
 primary display only". It enables quick switching to an application on a given workspace via
 keyboard by preventing the focus from being restored to a window on a secondary monitor.
