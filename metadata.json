@@ -2,11 +2,12 @@
   "name": "Focus Follows Workspace",
   "description": "Focus the primary monitor after switching workspaces via keyboard",
   "uuid": "focus-follows-workspace@christopher.luebbemeier.gmail.com",
-  "version": 4,
+  "version": 5,
   "shell-version": [
     "41",
     "42",
-    "43"
+    "43",
+    "44"
   ],
   "url": "https://github.com/christopher-l/focus-follows-workspace"
 }
