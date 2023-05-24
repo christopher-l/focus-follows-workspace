@@ -9,6 +9,7 @@ const WindowManager = imports.ui.windowManager;
 const WorkspaceAnimation = imports.ui.workspaceAnimation;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
+const GLib = imports.gi.GLib;
 
 class Extension {
     constructor() {
@@ -37,6 +38,7 @@ class Extension {
         Meta.Workspace.prototype.activate = this._activateOriginal;
         this._settings.disconnect(this._moveCursorChanged);
         this._settings = null;
+        this._clearTimeout();
     }
 
     _overrideActionMoveWorkspace() {
@@ -140,8 +142,19 @@ class Extension {
 
     _tick() {
         return new Promise((resolve) => {
-            Mainloop.timeout_add(0, resolve);
+            this._clearTimeout();
+            this._timeoutId = Mainloop.timeout_add(0, () => {
+                this._timeoutId = null;
+                resolve();
+            });
         });
+    }
+
+    _clearTimeout() {
+        if (this._timeoutId) {
+            GLib.Source.remove(this._timeoutId);
+            this._timeoutId = null;
+        }
     }
 }
 
