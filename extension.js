@@ -1,28 +1,20 @@
 'use strict';
 
-const Clutter = imports.gi.Clutter;
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
-const AltTab = imports.ui.altTab;
-const Main = imports.ui.main;
-const WindowManager = imports.ui.windowManager;
-const WorkspaceAnimation = imports.ui.workspaceAnimation;
-const Mainloop = imports.mainloop;
-const Meta = imports.gi.Meta;
-const GLib = imports.gi.GLib;
+import Clutter from 'gi://Clutter';
+import GLib from 'gi://GLib';
+import Meta from 'gi://Meta';
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as WindowManager from 'resource:///org/gnome/shell/ui/windowManager.js';
 
-class Extension {
-    constructor() {
-        this._wasScrollEvent = false;
-    }
+export default class FocusFollowsWorkspaceExtension extends Extension {
+    _wasScrollEvent = false;
 
     enable() {
         this._overrideActionMoveWorkspace();
         this._overrideHandleWorkspaceScroll();
         this._overrideActivate();
-        this._settings = ExtensionUtils.getSettings(
-            'org.gnome.shell.extensions.focus-follows-workspace',
-        );
+        this._settings = this.getSettings('org.gnome.shell.extensions.focus-follows-workspace');
         this._moveCursor = this._settings.get_boolean('move-cursor');
         this._moveCursorChanged = this._settings.connect(
             `changed::move-cursor`,
@@ -52,7 +44,9 @@ class Extension {
             // Moving the cursor when the workspace switch was triggered by a scroll event is
             // confusing, so we rather fail to focus a window on the activated workspace than moving
             // the cursor.
-            self._focusPrimaryMonitor({ moveCursor: !self._wasScrollEvent });
+            self._focusPrimaryMonitor({ moveCursor: !self._wasScrollEvent }).catch((error) =>
+                console.error(error),
+            );
             self._wasScrollEvent = false; // reset
         };
     }
@@ -103,7 +97,7 @@ class Extension {
     /** Focus the most recently focused window of the current workspace on the primary monitor. */
     async _focusPrimaryMonitor({ moveCursor = true } = {}) {
         if (moveCursor && this._moveCursor) {
-            // `AltTab.getWindows` might return windows of the current monitor only. We move the pointer
+            // `getWindows` might return windows of the current monitor only. We move the pointer
             // to the primary monitor to make it the current one.
             this._movePointerToPrimaryMonitor();
             // Wait a tick for the current monitor to be updated reliably.
@@ -119,7 +113,7 @@ class Extension {
      * Might not work when the cursor is not in the primary monitor.
      */
     _focusPrimaryMonitorWhenHasPointer(workspace) {
-        const windows = AltTab.getWindows(workspace);
+        const windows = getWindows(workspace);
         const mostRecentWindowOnPrimaryMonitor = windows.find(
             (window) => window.get_monitor() === Main.layoutManager.primaryIndex,
         );
@@ -143,7 +137,7 @@ class Extension {
     _tick() {
         return new Promise((resolve) => {
             this._clearTimeout();
-            this._timeoutId = Mainloop.timeout_add(0, () => {
+            this._timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 0, () => {
                 this._timeoutId = null;
                 resolve();
             });
@@ -158,6 +152,17 @@ class Extension {
     }
 }
 
-function init() {
-    return new Extension();
+// From https://gitlab.gnome.org/GNOME/gnome-shell/-/blob/main/js/ui/altTab.js#L53
+function getWindows(workspace) {
+    // We ignore skip-taskbar windows in switchers, but if they are attached
+    // to their parent, their position in the MRU list may be more appropriate
+    // than the parent; so start with the complete list ...
+    let windows = global.display.get_tab_list(Meta.TabList.NORMAL_ALL, workspace);
+    // ... map windows to their parent where appropriate ...
+    return windows
+        .map((w) => {
+            return w.is_attached_dialog() ? w.get_transient_for() : w;
+            // ... and filter out skip-taskbar windows and duplicates
+        })
+        .filter((w, i, a) => !w.skip_taskbar && a.indexOf(w) === i);
 }

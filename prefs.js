@@ -1,35 +1,33 @@
 'use strict';
 
-const { Adw, Gio, Gtk } = imports.gi;
+import Adw from 'gi://Adw';
+import Gio from 'gi://Gio';
+import Gtk from 'gi://Gtk';
+import { ExtensionPreferences } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
+export default class FocusFollowsWorkspaceExtensionPreferences extends ExtensionPreferences {
+    fillPreferencesWindow(window) {
+        const settings = this.getSettings('org.gnome.shell.extensions.focus-follows-workspace');
 
-function init() {}
+        const page = new Adw.PreferencesPage();
+        const group = new Adw.PreferencesGroup();
+        page.add(group);
 
-function fillPreferencesWindow(window) {
-    const settings = ExtensionUtils.getSettings(
-        'org.gnome.shell.extensions.focus-follows-workspace',
-    );
+        const row = new Adw.ActionRow({
+            title: 'Move cursor to the primary monitor',
+            subtitle: 'When switching workspaces',
+        });
+        group.add(row);
 
-    const page = new Adw.PreferencesPage();
-    const group = new Adw.PreferencesGroup();
-    page.add(group);
+        const toggle = new Gtk.Switch({
+            active: settings.get_boolean('move-cursor'),
+            valign: Gtk.Align.CENTER,
+        });
+        settings.bind('move-cursor', toggle, 'active', Gio.SettingsBindFlags.DEFAULT);
 
-    const row = new Adw.ActionRow({
-        title: 'Move cursor to the primary monitor',
-        subtitle: 'When switching workspaces',
-    });
-    group.add(row);
+        row.add_suffix(toggle);
+        row.activatable_widget = toggle;
 
-    const toggle = new Gtk.Switch({
-        active: settings.get_boolean('move-cursor'),
-        valign: Gtk.Align.CENTER,
-    });
-    settings.bind('move-cursor', toggle, 'active', Gio.SettingsBindFlags.DEFAULT);
-
-    row.add_suffix(toggle);
-    row.activatable_widget = toggle;
-
-    window.add(page);
+        window.add(page);
+    }
 }
