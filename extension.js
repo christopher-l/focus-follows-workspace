@@ -14,7 +14,7 @@ export default class FocusFollowsWorkspaceExtension extends Extension {
         this._overrideActionMoveWorkspace();
         this._overrideHandleWorkspaceScroll();
         this._overrideActivate();
-        this._settings = this.getSettings('org.gnome.shell.extensions.focus-follows-workspace');
+        this._settings = this.getSettings();
         this._moveCursor = this._settings.get_boolean('move-cursor');
         this._moveCursorChanged = this._settings.connect(
             `changed::move-cursor`,

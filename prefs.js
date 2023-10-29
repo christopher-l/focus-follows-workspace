@@ -7,7 +7,7 @@ import { ExtensionPreferences } from 'resource:///org/gnome/Shell/Extensions/js/
 
 export default class FocusFollowsWorkspaceExtensionPreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
-        const settings = this.getSettings('org.gnome.shell.extensions.focus-follows-workspace');
+        const settings = this.getSettings();
 
         const page = new Adw.PreferencesPage();
         const group = new Adw.PreferencesGroup();
