@@ -115,7 +115,8 @@ export default class FocusFollowsWorkspaceExtension extends Extension {
     _focusPrimaryMonitorWhenHasPointer(workspace) {
         const windows = getWindows(workspace);
         const mostRecentWindowOnPrimaryMonitor = windows.find(
-            (window) => window.get_monitor() === Main.layoutManager.primaryIndex,
+            (window) =>
+                window.get_monitor() === Main.layoutManager.primaryIndex && !window.minimized,
         );
         if (mostRecentWindowOnPrimaryMonitor) {
             workspace.activate_with_focus(
