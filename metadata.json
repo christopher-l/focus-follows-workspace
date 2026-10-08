@@ -2,8 +2,7 @@
     "name": "Focus Follows Workspace",
     "description": "Focus the primary monitor after switching workspaces via keyboard",
     "uuid": "focus-follows-workspace@christopher.luebbemeier.gmail.com",
-    "version": 15,
-    "shell-version": ["45", "46", "47", "48", "49", "50"],
+    "shell-version": ["45", "46", "47", "48", "49", "50", "51"],
     "settings-schema": "org.gnome.shell.extensions.focus-follows-workspace",
     "url": "https://github.com/christopher-l/focus-follows-workspace"
 }
