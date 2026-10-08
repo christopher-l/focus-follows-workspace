@@ -4,7 +4,7 @@ set -e
 
 PACK_FILE="focus-follows-workspace@christopher.luebbemeier.gmail.com.shell-extension.zip"
 
-function compile() (
+function compile_schemas() (
     glib-compile-schemas schemas/
     echo "Compiled schemas"
 )
@@ -20,13 +20,19 @@ function install() (
 )
 
 function main() (
-    compile
+   	while getopts his flag; do
+		case $flag in
+		s) schemas=1 ;;
+		i) install=1 ;;
+		esac
+	done
+	if [ -n "$schemas" ]; then
+        compile_schemas
+	fi
     pack
-    while getopts i flag; do
-        case $flag in
-        i) install ;;
-        esac
-    done
+    if [ -n "$install" ]; then
+		install
+	fi
 )
 
 main "$@"
